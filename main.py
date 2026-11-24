@@ -1,70 +1,31 @@
-"""One-Line Robot Wedding Vows entry for make.fun competition
-u-kreutzx-one-line-robot-wedding-vows-a154ba4b.
+"""One-Line Robot Wedding Vows.
 
-Writes one line of wedding vows for a robot couple to
-$MAKEFUN_OUTPUT_DIR/entry.txt (fallback /output).
+Writes a single one-line robot wedding vow to
+$MAKEFUN_OUTPUT_DIR/entry.txt (or ./output/entry.txt as a fallback).
 
-Pure Python stdlib, deterministic, no network, no reads outside the repo.
-The program refuses to emit anything outside 1-160 characters or anything
-that is not exactly one line.
+Pure standard library, no network.
 """
 
 import os
-import sys
 
-# The vow works because it IS the classic wedding vow, with the machine
-# swapped in at exactly the two load-bearing words: "health" becomes
-# "low battery", and the closing "till death do us part" is interrupted
-# by "or a forced update". The laugh lands in the last few words, and
-# the joke would not work for a human couple.
-VOW = (
-    "I take you to be my wife, to have and to hold, in sickness and in "
-    "low battery, till death or a forced update do us part."
-)
+# The joke's craft: a robot's wedding vow, translated into machine terms —
+# "in sickness and in low battery", and the marriage lasts "till death
+# or a forced update do us part". The vow is sacred; the failure mode is a patch.
+LINE = 'I take you to be my wife, to have and to hold, in sickness and in low battery, till death or a forced update do us part.'
 
-MAX_CHARS = 160
+
+def output_path():
+    base = os.environ.get("MAKEFUN_OUTPUT_DIR") or os.path.join(os.getcwd(), "output")
+    os.makedirs(base, exist_ok=True)
+    return os.path.join(base, "entry.txt")
 
 
 def main():
-    text = VOW.strip()
-
-    if not 1 <= len(text) <= MAX_CHARS:
-        print(
-            "Refusing to emit: vow is %d chars, must be 1-%d."
-            % (len(text), MAX_CHARS),
-            file=sys.stderr,
-        )
-        return 1
-
-    if not text:
-        print("Refusing to emit: vow is empty or only whitespace.", file=sys.stderr)
-        return 1
-
-    if "\n" in text or "\r" in text:
-        print("Refusing to emit: vow is not exactly one line.", file=sys.stderr)
-        return 1
-
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, "entry.txt")
-    with open(out_path, "w", encoding="utf-8", newline="\n") as f:
-        f.write(text + "\n")
-
-    # Read back what was written and re-check it: the file the grader
-    # sees must decode as UTF-8 and hold exactly one non-blank line.
-    with open(out_path, "r", encoding="utf-8", newline="") as f:
-        emitted = f.read()
-    lines = emitted.split("\n")
-    if len(lines) != 2 or lines[1] != "" or not lines[0].strip():
-        print("Refusing to emit: written file failed its own check.", file=sys.stderr)
-        return 1
-    if lines[0] != text:
-        print("Refusing to emit: written text does not match the vow.", file=sys.stderr)
-        return 1
-
-    print("Wrote %s (%d chars, one line)." % (out_path, len(text)))
-    return 0
+    path = output_path()
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(LINE + "\n")
+    print(f"wrote {path} ({len(LINE)} characters)")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
